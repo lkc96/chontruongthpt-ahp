@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hệ hỗ trợ ra quyết định chọn trường THPT dân lập</title>
+
+  <link rel="stylesheet" type="text/css" href="static/css/vendor.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <link rel="stylesheet" href="static/style.css">
+  
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <script src="static/js/modernizr.js"></script>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body data-bs-spy="scroll" data-bs-target="#navbar-example2" tabindex="0">
+
+  <header id="nav" class="site-header position-fixed text-white bg-dark">
+    <nav id="navbar-example2" class="navbar navbar-expand-lg py-2">
+      <div class="container">
+        <a class="navbar-brand" href="./index.html"></a> 
+        <!-- <img src="static/images/logo.png" alt="image"> -->
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+          <ion-icon name="menu-outline" style="font-size: 30px;"></ion-icon>
+        </button>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbar2Label">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasNavbar2Label">Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <!-- <div class="offcanvas-body">
+            <ul class="navbar-nav align-items-center justify-content-end flex-grow-1">
+              <li class="nav-item">
+                <a class="nav-link active me-md-4 custom-nav-link" href="#billboard">Trang chủ</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link me-md-4 custom-nav-link" href="#select-school">Chọn trường</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link me-md-4 custom-nav-link" href="#matrix-comparison">So sánh</a>
+              </li>
+            </ul>
+          </div> -->
+        <div class="offcanvas-body d-flex flex-column flex-md-row align-items-center">
+          <!-- Logo/Tiêu đề ở bên trái -->
+          <div class="navbar-brand me-auto me-md-6">
+            <h5 class="fw-bold m-0" style="font-size: 1.8rem; letter-spacing: 0.01em; color: #2c4236;">
+              HỆ THỐNG CHỌN TRƯỜNG THPT TƯ THỤC
+            </h5>
+          </div>
+          
+          <!-- Menu điều hướng ở bên phải -->
+          <ul class="navbar-nav align-items-center justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link active me-md-4 custom-nav-link" href="#billboard">Trang chủ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link me-md-4 custom-nav-link" href="#select-school">Chọn trường</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link me-md-4 custom-nav-link" href="#matrix-comparison">So sánh</a>
+            </li>
+          </ul>
+        </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+   <!-- billboard start  -->
+   <section id="billboard">
+    <div class="container">
+      <div class="row flex-lg-row-reverse align-items-center">
+        <!-- <div class="col-lg-6"> -->
+          <section id="map-section" class="mb-5">
+            <!-- <h2 class="text-center mb-4 text-white">Bản đồ các trường</h2> -->
+            <div id="map" class="map-container">
+              <!-- Popup Overlay -->
+              <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+              </div>
+            </div>
+          </section>
+        
+          <!-- OpenLayers JS -->
+          <script src="https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js"></script>
+          <script>
+            const view = new ol.View({
+              center: ol.proj.fromLonLat([106.660172, 10.762622]), // Tọa độ TP.HCM
+              zoom: 10.6
+            });
+        
+            const osmLayer = new ol.layer.Tile({
+              source: new ol.source.OSM({
+              attributions: []
+              })
+            });
+        
+            const ranhPhuongLayer = new ol.layer.Tile({
+              source: new ol.source.TileWMS({
+                url: 'http://localhost:8082/geoserver/AHP_THPT/wms',
+                params: {
+                  'LAYERS': 'AHP_THPT:RGQuan_HCM',
+                  'TILED': true,
+                  'FORMAT': 'image/png'
+                },
+                serverType: 'geoserver',
+                transition: 0
+              })
+            });
+        
+            const truongTHPTLayer = new ol.layer.Tile({
+              source: new ol.source.TileWMS({
+                url: 'http://localhost:8082/geoserver/AHP_THPT/wms',
+                params: {
+                  'LAYERS': 'AHP_THPT:truong',
+                  'TILED': true,
+                  'FORMAT': 'image/png'
+                },
+                serverType: 'geoserver',
+                transition: 0
+              })
+            });
+        
+            const map = new ol.Map({
+              target: 'map',
+              layers: [osmLayer, ranhPhuongLayer, truongTHPTLayer],
+              view: view
+            });
+        
+            const popup = document.getElementById('popup');
+            const overlay = new ol.Overlay({
+              element: popup,
+              positioning: 'bottom-center',
+              stopEvent: false,
+              offset: [0, -10]
+            });
+            map.addOverlay(overlay);
+        
+            map.on('singleclick', function (evt) {
+              const viewResolution = view.getResolution();
+              const url = truongTHPTLayer.getSource().getFeatureInfoUrl(
+                evt.coordinate,
+                viewResolution,
+                'EPSG:3857',
+                {
+                  'INFO_FORMAT': 'application/json'
+                }
+              );
+              if (url) {
+                fetch(url)
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.features.length > 0) {
+                      const props = data.features[0].properties;
+                      const content = `<strong>${props.ten_truong}</strong><br/>Địa chỉ: ${props.dia_chi}`;
+                      popup.innerHTML = content;
+                      overlay.setPosition(evt.coordinate);
+                    } else {
+                      popup.innerHTML = '';
+                    }
+                  });
+              }
+            });
+          </script>
+        <!-- </div> -->
+
+        <!-- <div class="col-lg-6">
+          <h2 class="text-capitalize lh-3 my-3">HỆ THỐNG CHỌN TRƯỜNG THPT </h2>
+         <div class="container">
+          <p class="fs-6 fw-semibold text-dark" style="text-align: justify; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
+            Kết quả thi vào lớp 10 công lập có thể đã mang đến những nỗi thất vọng khi ước mơ vào trường công lập không thành. Nhưng điều đó không phải là dấu chấm hết cho con đường học vấn. Thay vì chùn bước, nhiều phụ huynh đã bắt đầu tìm kiếm những trường THPT dân lập uy tín, nơi con em mình có thể tiếp tục học tập trong một môi trường chất lượng, phù hợp với năng lực và điều kiện gia đình.
+          </p>
+          <p class="fs-6 fw-semibold text-dark" style="text-align: justify; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
+            Chúng tôi hiểu được mong muốn ấy, và sẵn sàng hỗ trợ quý phụ huynh và các em học sinh tìm kiếm ngôi trường dân lập lý tưởng. Hãy chia sẻ với chúng tôi về nhu cầu và nguyện vọng của quý phụ huynh để cùng nhau mở ra những cánh cửa mới cho tương lai.
+          </p>
+        </div>
+        </div> -->
+      
+        <!-- Cột tiêu đề và văn bản -->
+        <!-- <div class="col-lg-6">
+          <h2 class="fw-bold mb-4">HỆ THỐNG CHỌN TRƯỜNG THPT TƯ THỤC</h2>
+          
+          <p class="fs-5 fw-semibold text-dark" style="text-align: justify !important; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
+            Kết quả thi vào lớp 10 công lập có thể đã mang đến những nỗi thất vọng khi ước mơ vào trường công lập không thành. Nhưng điều đó không phải là dấu chấm hết cho con đường học vấn. Thay vì chùn bước, nhiều phụ huynh đã bắt đầu tìm kiếm những trường THPT dân lập uy tín, nơi con em mình có thể tiếp tục học tập trong một môi trường chất lượng, phù hợp với năng lực và điều kiện gia đình.
+          </p>
+          
+          <p class="fs-5 fw-semibold text-dark" style="text-align: justify !important; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
+            Chúng tôi hiểu được mong muốn ấy, và sẵn sàng hỗ trợ quý phụ huynh và các em học sinh tìm kiếm ngôi trường dân lập lý tưởng. Hãy chia sẻ với chúng tôi về nhu cầu và nguyện vọng của quý phụ huynh để cùng nhau mở ra những cánh cửa mới cho tương lai.
+          </p>
+        </div> -->
+  
+      </div>
+    </section>
+    <!-- select school  -->
+    <section id="select-school">
+      <div class="container">
+        <div class="row flex-lg-row-reverse align-items-center">
+          <div class="col-lg-6">
+            <div class="table-responsive mt-3">
+              <table id="resultTable" class="table table-bordered text-center table-light-custom">
+                <thead class="table-header-custom">
+                  <tr>
+                    <th class="body-text-color">Phương án</th>
+                    <th class="body-text-color">Tên trường</th>
+                  </tr>
+                </thead>
+                <tbody id="resultBody">
+                </tbody>
+              </table>
+            </div>    
+          </div>
+          <div class="col-lg-6">
+            <div class="row billboard-row">
+              <div class="col-12 mb-3">
+                <label class="form-label fw-bold">Chọn loại trường:</label>
+                <select class="form-select" id="loai-truong">
+                  <option value="">-- Chọn loại trường --</option>
+                  <option value="dân lập">Dân lập</option>
+                  <option value="quốc tế">Quốc tế</option>
+                </select>
+              </div>
+              <!-- 5 dropdown chọn trường -->
+              <div class="col-12">
+                <label class="form-label fw-bold">Hãy chọn 5 trường bạn xem xét:</label>
+              </div>
+              {% for i in range(5) %}
+                <div class="col-lg-4 billboard-select mb-2">
+                <select class="form-select truong-select" id="truong-select-{{i}}">
+                <option value="">-- Chọn trường --</option>
+                {% for truong in truongs %}
+                  <option value="{{ truong.truong_id }}" data-loai="{{ truong.laoi_truong|lower }}">{{ truong.ten_truong }}</option>
+                {% endfor %}
+               </select>
+                </div>
+              {% endfor %}
+              
+              <div class="col-lg-12 mt-3">
+                <button type="button" class="btn btn-primary" onclick="submitSelectedSchools()">Chọn</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+   
+ <!-- Matrix start  -->
+ <section id="matrix-comparison" class="container my-5">
+  <h3 class="mb-4 ">Bảng Ma Trận So Sánh Cặp Các Tiêu Chí</h3>
+  <p class="fs-6 text-black-justify" style="text-indent: 2em;">
+    Để đánh giá mức độ quan trọng giữa các tiêu chí, người dùng so sánh từng cặp tiêu chí theo thang điểm AHP từ 1/9 đến 9.
+    Giá trị <em>1</em> thể hiện hai tiêu chí <em> quan trọng như nhau </em>; giá trị <em>3, 5, 7, 9</em> cho thấy tiêu chí hàng ngang <em>quan trọng hơn tiêu chí cột</em> với mức độ tăng dần; ngược lại, 
+    các giá trị <em>1/3, 1/5, 1/7, 1/9</em> biểu thị tiêu chí hàng ngang <em>kém quan trọng hơn</em>. 
+  </p> 
+  <table class="table table-bordered text-center table-light-custom" id="comparisonMatrix">
+    <thead class="table-header-custom">
+      <tr>
+        <th class="body-text-color">Tiêu chí</th>
+        <th class="body-text-color">Chất lượng giáo dục</th>
+        <th class="body-text-color">Cơ sở vật chất</th>
+        <th class="body-text-color">Học phí</th>
+        <th class="body-text-color">Hoạt động ngoại khóa</th>
+      </tr>
+    </thead>
+    <tbody id="matrixBody"></tbody>
+  </table>
+</section>
+<section id="resultSection" class="container my-5" style="display: none;"> 
+  <div class="row flex-lg-row-reverse align-items-center">
+    <div class="col-lg-6">
+      <canvas id="weightsChart" width="400" height="180"></canvas>
+    </div>
+    <div class="col-lg-6">
+      <div class="table-responsive mt-3">
+          <table id="weightsTable" class="table table-bordered text-center table-light-custom">
+        <thead class="table-header-custom">
+        <tr>
+          <th class="body-text-color">Tiêu chí</th>
+          <th class="body-text-color">Trọng số</th>
+        </tr>
+        </thead>
+        <tbody id="weightsBody">
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Kết quả AHP -->
+<section id="ahp-results" class="container mt-5" style="display: none;">
+  <h3 class="body-text-color">Kết quả Xếp Hạng Trường</h3>
+  <p class="fs-6 text-black-justify" style="text-indent: 2em;">
+    Dựa trên những lựa chọn và đánh giá của bạn về các tiêu chí quan trọng, 
+    hệ thống đã tiến hành phân tích và đưa ra bảng xếp hạng các trường phù hợp nhất. 
+    Hy vọng kết quả này sẽ là một nguồn tham khảo hữu ích, giúp bạn tự tin hơn trong quá trình lựa chọn ngôi trường phù hợp. 
+    <em>Chúc bạn thành công và luôn vững bước trên con đường học vấn của mình nhé !</em>
+  </p>
+  <div class="row flex-lg-row-reverse align-items-center">
+    <div class="col-lg-6">
+      <div class="my-4">
+        <canvas id="ahpRankingChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <table class="table table-bordered text-center table-light-custom">
+    <thead class="table-header-custom">
+      <tr>
+        <th class="body-text-color">Hạng</th>
+        <th class="body-text-color">Tên Trường</th>
+        <th class="body-text-color">Điểm AHP</th>
+      </tr>
+    </thead>
+    <tbody id="ahp-results-body"></tbody>
+  </table>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="d-flex justify-content-center mt-4 gap-3">
+    <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="calculateAHP()">Kiểm Tra</button>
+    <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="submitAHPMatrix()">Tính toán AHP</button>
+    <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="openAHPMatrices()">Chi Tiết Kết Quả</button>
+  </div>
+</section>
+
+
+
+
+<!-- <script>
+  const criteria = [
+    "Chất lượng giáo dục",
+    "Cơ sở vật chất",
+    "Học phí",
+    "Hoạt động ngoại khóa"
+  ];
+
+  // Hàm phân tích phân số hoặc số thực
+  function parseFraction(value) {
+    if (value.includes("/")) {
+      const parts = value.split("/");
+      if (parts.length === 2) {
+        const numerator = parseFloat(parts[0]);
+        const denominator = parseFloat(parts[1]);
+        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+          return numerator / denominator;
+        }
+      }
+      return NaN;
+    }
+    return parseFloat(value);
+  }
+
+  // Tạo bảng nhập liệu
+  function generateMatrix() {
+    let tbody = '';
+    for (let i = 0; i < criteria.length; i++) {
+      tbody += `<tr><th class="text-white">${criteria[i]}</th>`;
+      for (let j = 0; j < criteria.length; j++) {
+        const id = `cell-${i}-${j}`;
+        if (i === j) {
+          tbody += `<td><input type="text" value="1" class="form-control text-center" id="${id}" disabled></td>`;
+        } else if (j > i) {
+          tbody += `<td><input type="text" class="form-control text-center"
+                       id="${id}" onchange="updateMatrix(${i}, ${j}, this)"></td>`;
+        } else {
+          tbody += `<td><input type="text" class="form-control text-center" id="${id}" disabled></td>`;
+        }
+      }
+      tbody += '</tr>';
+    }
+    document.getElementById('matrixBody').innerHTML = tbody;
+  }
+
+  // Cập nhật ô nghịch đảo khi nhập
+  function updateMatrix(row, col, input) {
+    const rawValue = input.value.trim();
+    const num = parseFraction(rawValue);
+
+    if (isNaN(num) || num < 1 / 9 || num > 9) {
+      alert("Vui lòng nhập số từ 1/9 đến 9 (có thể là phân số như 1/3, 2/5...)");
+      input.value = '';
+      return;
+    }
+
+    const inverse = 1 / num;
+    const inverseCell = document.getElementById(`cell-${col}-${row}`);
+    if (inverseCell) inverseCell.value = inverse.toFixed(4).replace(/\.?0+$/, "");
+
+    document.getElementById(`cell-${row}-${row}`).value = "1";
+    document.getElementById(`cell-${col}-${col}`).value = "1";
+  }
+
+  // Khởi tạo khi trang tải
+  document.addEventListener("DOMContentLoaded", generateMatrix);
+</script> -->
+<script>
+  const criteria = [
+    "Chất lượng giáo dục",
+    "Cơ sở vật chất",
+    "Học phí",
+    "Hoạt động ngoại khóa"
+  ];
+
+  // Hàm phân tích phân số hoặc số thực
+  function parseFraction(value) {
+    if (value.includes("/")) {
+      const parts = value.split("/");
+      if (parts.length === 2) {
+        const numerator = parseFloat(parts[0]);
+        const denominator = parseFloat(parts[1]);
+        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+          return numerator / denominator;
+        }
+      }
+      return NaN;
+    }
+    return parseFloat(value);
+  }
+
+  function generateMatrix() {
+    let tbody = '';
+    for (let i = 0; i < criteria.length; i++) {
+      tbody += `<tr><th class="text-white">${criteria[i]}</th>`;
+      for (let j = 0; j < criteria.length; j++) {
+        const id = `cell-${i}-${j}`;
+        if (i === j) {
+          tbody += `<td><input type="text" value="1" class="form-control text-center" id="${id}" disabled></td>`;
+        } else if (j > i) {
+          tbody += `<td><input type="text"  class="form-control text-center"
+                     id="${id}" onchange="updateMatrix(${i}, ${j}, this)"></td>`;
+        } else {
+          tbody += `<td><input type="text" class="form-control text-center" id="${id}" disabled></td>`;
+        }
+      }
+      tbody += '</tr>';
+    }
+    document.getElementById('matrixBody').innerHTML = tbody;
+  }
+
+  function updateMatrix(row, col, input) {
+    const rawValue = input.value.trim();
+    const num = parseFraction(rawValue);
+
+    if (isNaN(num) || num < 1/9 || num > 9) {
+      alert("Vui lòng nhập số từ 1/9 đến 9 (có thể là phân số như 1/3, 2/5...)");
+      input.value = '';
+      return;
+    }
+
+    const inverse = 1 / num;
+    const inverseCell = document.getElementById(`cell-${col}-${row}`);
+    if (inverseCell) inverseCell.value = inverse.toFixed(4).replace(/\.?0+$/, "");
+
+    document.getElementById(`cell-${row}-${row}`).value = "1";
+    document.getElementById(`cell-${col}-${col}`).value = "1";
+  }
+
+  function calculateAHP() {
+    const n = criteria.length;
+    let matrix = [];
+
+    for (let i = 0; i < n; i++) {
+      matrix[i] = [];
+      for (let j = 0; j < n; j++) {
+        const cell = document.getElementById(`cell-${i}-${j}`);
+        if (!cell || cell.value === '') {
+          alert(`Ô (${i + 1}, ${j + 1}) chưa hợp lệ hoặc thiếu dữ liệu!`);
+          return;
+        }
+
+        const value = parseFraction(cell.value);
+        if (isNaN(value) || value <= 0) {
+          alert(`Ô (${i + 1}, ${j + 1}) không hợp lệ!`);
+          return;
+        }
+
+        matrix[i][j] = value;
+      }
+    }
+
+    // Tổng cột
+    let colSums = new Array(n).fill(0);
+    for (let j = 0; j < n; j++) {
+      for (let i = 0; i < n; i++) {
+        colSums[j] += matrix[i][j];
+      }
+    }
+
+    // Chuẩn hóa
+    let normalizedMatrix = [];
+    for (let i = 0; i < n; i++) {
+      normalizedMatrix[i] = [];
+      for (let j = 0; j < n; j++) {
+        normalizedMatrix[i][j] = matrix[i][j] / colSums[j];
+      }
+    }
+
+    // Trọng số
+    let weights = [];
+    for (let i = 0; i < n; i++) {
+      let sum = 0;
+      for (let j = 0; j < n; j++) {
+        sum += normalizedMatrix[i][j];
+      }
+      weights[i] = sum / n;
+    }
+
+    // Lambda max
+    let lambdaMax = 0;
+    for (let i = 0; i < n; i++) {
+      let rowSum = 0;
+      for (let j = 0; j < n; j++) {
+        rowSum += matrix[i][j] * weights[j];
+      }
+      lambdaMax += rowSum / weights[i];
+    }
+    lambdaMax /= n;
+
+    const CI = (lambdaMax - n) / (n - 1);
+    const RI = 0.9;
+    const CR = CI / RI;
+
+    // Kết quả
+    const isValid = CR < 0.1;
+    if (isValid) {
+    alert(`✅ Chỉ số nhất quán (CR): ${CR.toFixed(3)} – Hợp lệ`);
+  } else {
+    alert(`❌ Chỉ số nhất quán (CR): ${CR.toFixed(3)} – Không hợp lệ`);
+  }
+    // 👉 Hiển thị bảng trọng số
+const weightsBody = document.getElementById("weightsBody");
+weightsBody.innerHTML = ""; // Xóa dữ liệu cũ nếu có
+
+// Dữ liệu cho biểu đồ
+const labels = [];
+const data = [];
+
+for (let i = 0; i < n; i++) {
+  const row = document.createElement("tr");
+
+  const criteriaCell = document.createElement("td");
+  criteriaCell.textContent = criteria[i];
+  labels.push(criteria[i]); // label cho biểu đồ
+
+  const weightCell = document.createElement("td");
+  weightCell.textContent = weights[i].toFixed(3);
+  data.push(weights[i]); // data cho biểu đồ
+
+  row.appendChild(criteriaCell);
+  row.appendChild(weightCell);
+  weightsBody.appendChild(row);
+}
+
+// Hiển thị biểu đồ trọng số
+const ctx = document.getElementById("weightsChart").getContext("2d");
+
+// Xóa biểu đồ cũ nếu có
+if (window.weightsChart instanceof Chart) {
+  window.weightsChart.destroy();
+}
+
+// Tạo biểu đồ mới
+window.weightsChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Trọng số tiêu chí',
+      data: data,
+      backgroundColor: 'rgba(30, 74, 50, 1)',
+      borderColor: 'rgba(30, 74, 50, 1)',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 1
+      }
+    }
+  }
+  });
+  document.getElementById("resultSection").style.display = "block";
+  }
+
+  document.addEventListener("DOMContentLoaded", generateMatrix);
+</script>
+
+  <!-- Footer start  -->
+  <section id="footer">
+     
+    <footer class="d-flex flex-wrap justify-content-between align-items-center border-top"></footer>
+
+    <div class="container">
+      <footer class="d-flex flex-wrap justify-content-between align-items-center py-2 ">
+        <div class="col-md-8 d-flex align-items-center">
+          <p>© 2025 - Hệ hỗ trợ ra quyết định chọn trường THPT dân lập với phương pháp AHP</p>
+
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <p>Sinh viên thực hiện: <a href="https://templatesjungle.com/" class="link-primary"
+              target="_blank">Nhóm 4</a> <br> Lớp: <a href="https://themewagon.com" class="link-primary"
+              target="_blank">10_ĐH_TTMT</a></p>
+
+        </div>
+
+      </footer>
+    </div>
+  </section>
+
+
+  <script src="static/js/jquery-1.11.0.min.js"></script>
+  <script src="static/js/script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+    crossorigin="anonymous"></script>
+  
+  <script src="{{ url_for('static', filename='js/selectSchool.js') }}"></script>
+</body>
+
+</html>

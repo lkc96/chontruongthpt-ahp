@@ -1,0 +1,85 @@
+
+  <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 40px;">
+  <!-- Vùng hiển thị bảng -->
+  <div style="flex: 1 1 600px;">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th></th>
+          {% for label in labels %}
+            <th>{{ label }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in range(matrix|length) %}
+          <tr>
+            <th>{{ labels[i] }}</th>
+            {% for j in range(matrix[i]|length) %}
+              <td>
+                <input 
+                  type="text" 
+                  name="cell_{{ i }}_{{ j }}" 
+                  value="{% if matrix[i][j].denominator == 1 %}{{ matrix[i][j].numerator }}{% else %}{{ matrix[i][j].numerator }}/{{ matrix[i][j].denominator }}{% endif %}"
+                  style="width: 60px; text-align: center;"
+                >
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+        <tr>
+          <th>Trọng số</th>
+          {% for w in weights %}
+            <td><strong>{{ "%.3f"|format(w) }}</strong></td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="text-center mt-2">
+      <button type="submit" class="btn-custom-update">
+        <i class="fas fa-sync-alt me-2"></i> Cập nhật ma trận
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Vùng hiển thị chỉ số AHP -->
+  <div class="results-card" style="flex: 0 0 250px;">
+    {% if lambda_max is defined and ci is defined and cr is defined %}
+      <h4 style="margin-bottom: 10px;">Chỉ số đánh giá</h4>
+      <div class="result-item">
+        <span class="result-label">λ<sub>max</sub>:</span>
+        <span class="result-value">{{ '%.4f'|format(lambda_max) }}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">CI:</span>
+        <span class="result-value">{{ '%.4f'|format(ci) }}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">CR:</span>
+        <span class="result-value 
+          {% if cr < 0.1 %}
+            consistency-good
+          {% elif cr < 0.2 %}
+            consistency-warning
+          {% else %}
+            consistency-bad
+          {% endif %}
+        ">{{ '%.4f'|format(cr) }}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Kết luận:</span>
+        <span class="result-value">
+          {% if cr < 0.1 %}
+            <span class="consistency-good">Hợp lệ</span>
+          {% else %}
+            <span class="consistency-bad">Không hợp lệ</span>
+          {% endif %}
+        </span>
+      </div>
+    {% else %}
+      <p>Không có chỉ số</p>
+    {% endif %}
+  </div>
+</div>
