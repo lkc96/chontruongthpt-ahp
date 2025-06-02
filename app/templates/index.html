@@ -540,8 +540,10 @@
     const isValid = CR < 0.1;
     if (isValid) {
     alert(`✅ Chỉ số nhất quán (CR): ${CR.toFixed(3)} – Hợp lệ`);
+    document.getElementById("resultSection").style.display = "block";
   } else {
     alert(`❌ Chỉ số nhất quán (CR): ${CR.toFixed(3)} – Không hợp lệ`);
+    document.getElementById("resultSection").style.display = "none";
   }
     // 👉 Hiển thị bảng trọng số
 const weightsBody = document.getElementById("weightsBody");
