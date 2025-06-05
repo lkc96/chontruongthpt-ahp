@@ -208,9 +208,6 @@
     <div class="container">
       <h1>Ma trận AHP - Hệ thống chọn trường THPT</h1>
       <p>Phân tích thứ bậc các tiêu chí và phương án trường học dựa theo phương pháp AHP</p>
-       <button onclick="window.print()" class="btn btn-success px-4 rounded-pill shadow-sm fw-semibold fs-6">
-      <i class="fa-solid fa-file-pdf"></i> Xuất PDF
-    </button>
     </div>
   </div>
 
@@ -291,5 +288,6 @@
   </div>
 </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/selectSchool.js') }}"></script>
   </body>
 </html>
