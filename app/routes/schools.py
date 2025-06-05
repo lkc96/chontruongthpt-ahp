@@ -1,8 +1,14 @@
-from flask import Blueprint, render_template, jsonify, request
+import os
+from flask import Blueprint, current_app, render_template, jsonify, request, send_file
 from app.models import Truong, ChatLuongGiaoDuc, CoSoVatChat, HoatDongNgoaiKhoa, HocPhi
 from app import db
 from fractions import Fraction
 import math
+import pdfkit
+from fpdf import FPDF
+from weasyprint import HTML
+import io
+from flask import make_response
 
 bp = Blueprint('schools', __name__)
 
@@ -202,6 +208,70 @@ def ahp_matrices():
                        lambda_hd=lambda_max_hd, ci_hd=ci_hd, cr_hd=cr_hd,
                        lambda_hp=lambda_max_hp, ci_hp=ci_hp, cr_hp=cr_hp)
 
+@bp.route('/get_PA_matrices', methods=['POST'])
+def get_PA_matrices():
+    data = request.get_json()
+    truong_ids = data.get('truong_ids', [])
+
+    if not truong_ids:
+        return "Không có ID trường được chọn", 400
+
+    truongs = Truong.query.filter(Truong.truong_id.in_(truong_ids)).all()
+
+    labels = [t.ten_truong for t in truongs]
+    clgd = [t.chat_luong.diem_chuan_hoa for t in truongs]
+    csvc = [t.co_so.diem_chuan_hoa for t in truongs]
+    hd = [t.hoat_dong.diem_chuan_hoa for t in truongs]
+    hp = [t.hoc_phi.hoc_phi_ch for t in truongs]
+
+    def build_ahp_matrix(values, reverse=False):
+        n = len(values)
+        matrix = []
+        for i in range(n):
+            row = []
+            for j in range(n):
+                if values[i] == 0 or values[j] == 0:
+                    f = Fraction(0, 1)
+                else:
+                    val = values[j] / values[i] if reverse else values[i] / values[j]
+                    f = Fraction(val).limit_denominator()
+                row.append(f)
+            matrix.append(row)
+        return matrix
+
+    def matrix_to_string(matrix):
+        return [[str(cell) for cell in row] for row in matrix]
+
+    matrix_clgd = build_ahp_matrix(clgd)
+    matrix_csvc = build_ahp_matrix(csvc)
+    matrix_hd = build_ahp_matrix(hd)
+    matrix_hp = build_ahp_matrix(hp, reverse=True)
+
+    weights_clgd = calculate_weights(matrix_clgd)
+    weights_csvc = calculate_weights(matrix_csvc)
+    weights_hd = calculate_weights(matrix_hd)
+    weights_hp = calculate_weights(matrix_hp)
+
+    lambda_max_clgd, ci_clgd, cr_clgd = calculate_consistency_ratio(matrix_clgd, weights_clgd)
+    lambda_max_csvc, ci_csvc, cr_csvc = calculate_consistency_ratio(matrix_csvc, weights_csvc)
+    lambda_max_hd, ci_hd, cr_hd = calculate_consistency_ratio(matrix_hd, weights_hd)
+    lambda_max_hp, ci_hp, cr_hp = calculate_consistency_ratio(matrix_hp, weights_hp)
+
+    response = {
+        "labels": labels,
+        "education": matrix_to_string(matrix_clgd),
+        "facility": matrix_to_string(matrix_csvc),
+        "activity": matrix_to_string(matrix_hd),
+        "tuition": matrix_to_string(matrix_hp),
+        "consistency": {
+            "education": {"lambda_max": lambda_max_clgd, "ci": ci_clgd, "cr": cr_clgd},
+            "facility": {"lambda_max": lambda_max_csvc, "ci": ci_csvc, "cr": cr_csvc},
+            "activity": {"lambda_max": lambda_max_hd, "ci": ci_hd, "cr": cr_hd},
+            "tuition": {"lambda_max": lambda_max_hp, "ci": ci_hp, "cr": cr_hp}
+        }
+    }
+    return jsonify(response)
+
 @bp.route('/ahp_calculate_final', methods=['POST'])
 def ahp_calculate_final():
     data = request.get_json()
@@ -287,3 +357,138 @@ def ahp_calculate_final():
         "CR": float(cr),
         "results": results
     })
+
+@bp.route('/report', methods=['POST'])
+def report():
+    data = request.get_json()
+    criteria_matrix = data.get("criteria_matrix")
+    truong_ids = data.get("truong_ids", [])
+    save_pdf = data.get("save_pdf", False)
+
+    if not criteria_matrix or not truong_ids:
+        return jsonify({"error": "Thiếu dữ liệu!"}), 400
+
+    # Lấy dữ liệu các trường
+    truongs = (
+        db.session.query(
+            Truong.truong_id,
+            Truong.ten_truong,
+            ChatLuongGiaoDuc.diem_chuan_hoa.label("clgd"),
+            CoSoVatChat.diem_chuan_hoa.label("csvc"),
+            HoatDongNgoaiKhoa.diem_chuan_hoa.label("hdnk"),
+            HocPhi.hoc_phi_ch.label("hocphi")
+        )
+        .join(ChatLuongGiaoDuc, Truong.truong_id == ChatLuongGiaoDuc.truong_id)
+        .join(CoSoVatChat, Truong.truong_id == CoSoVatChat.truong_id)
+        .join(HoatDongNgoaiKhoa, Truong.truong_id == HoatDongNgoaiKhoa.truong_id)
+        .join(HocPhi, Truong.truong_id == HocPhi.truong_id)
+        .filter(Truong.truong_id.in_(truong_ids))
+        .all()
+    )
+
+    # Lấy điểm
+    labels = [t.ten_truong for t in truongs]
+    clgd = [t.clgd for t in truongs]
+    csvc = [t.csvc for t in truongs]
+    hd = [t.hdnk for t in truongs]
+    hp = [t.hocphi for t in truongs]
+
+    # Tính trọng số tiêu chí
+    weights_criteria = calculate_weights(criteria_matrix)
+    
+
+    def build_matrix(values, inverse=False):
+        n = len(values)
+        matrix = []
+        for i in range(n):
+            row = []
+            for j in range(n):
+                a = values[i]
+                b = values[j]
+                if inverse:
+                    row.append(b / a if a != 0 else 0)
+                else:
+                    row.append(a / b if b != 0 else 0)
+            matrix.append(row)
+        return matrix
+    # Tính trọng số phương án cho từng tiêu chí
+    def build_ahp_matrix(values, reverse=False):
+        n = len(values)
+        matrix = []
+        for i in range(n):
+            row = []
+            for j in range(n):
+                if values[i] == 0 or values[j] == 0:
+                    row.append(Fraction(0, 1))
+                else:
+                    val = values[j] / values[i] if reverse else values[i] / values[j]
+                    row.append(Fraction(val).limit_denominator())
+            row = [elem if isinstance(elem, Fraction) else Fraction(elem) for elem in row]
+            matrix.append(row)
+        return matrix
+    matrix_clgd = build_ahp_matrix(clgd)
+    matrix_csvc = build_ahp_matrix(csvc)
+    matrix_hd = build_ahp_matrix(hd)
+    matrix_hp = build_ahp_matrix(hp, reverse=True)
+
+    weights_clgd = calculate_weights(build_matrix(clgd))
+    weights_csvc = calculate_weights(build_matrix(csvc))
+    weights_hd = calculate_weights(build_matrix(hd))
+    weights_hp = calculate_weights(build_matrix(hp, inverse=True))
+
+    # Tính điểm AHP tổng hợp cho từng trường
+    # Tính điểm tổng hợp cuối cùng
+    final_scores = []
+    for i in range(len(truongs)):
+        score = (
+            weights_criteria[0] * float(weights_clgd[i]) +
+            weights_criteria[1] * float(weights_csvc[i]) +
+            weights_criteria[2] * float(weights_hp[i]) +
+            weights_criteria[3] * float(weights_hd[i])
+        )
+        final_scores.append({
+            "ten_truong": labels[i],
+            "score": round(score, 4)
+        })
+
+    
+    # Nếu xuất PDF
+    if save_pdf:
+        rendered = render_template('report.html',
+                                labels=labels,
+                                criteria_matrix=criteria_matrix,
+                                weights_criteria=weights_criteria,
+                                matrix_clgd=matrix_clgd,
+                                matrix_csvc=matrix_csvc,
+                                matrix_hd=matrix_hd,
+                                matrix_hp=matrix_hp,
+                                weights_clgd=weights_clgd,
+                                weights_csvc=weights_csvc,
+                                weights_hd=weights_hd,
+                                weights_hp=weights_hp,
+                                final_scores = final_scores
+                                
+                           )
+        # Kết xuất PDF từ HTML
+        pdf_io = io.BytesIO()
+        HTML(string=rendered, base_url=request.base_url).write_pdf(pdf_io)
+        pdf_io.seek(0)
+
+        return send_file(pdf_io, mimetype='application/pdf', download_name='bao_cao_ahp.pdf', as_attachment=True)
+
+    # Nếu không phải export PDF thì render HTML như bình thường
+    return render_template('report.html',
+                                labels = labels,
+                                criteria_matrix = criteria_matrix,
+                                weights_criteria = weights_criteria,
+                                matrix_clgd =matrix_clgd,
+                                matrix_csvc =matrix_csvc,
+                                matrix_hd =matrix_hd,
+                                matrix_hp = matrix_hp,
+                                weights_clgd = weights_clgd,
+                                weights_csvc = weights_csvc,
+                                weights_hd = weights_hd,
+                                weights_hp = weights_hp,
+                                final_scores = final_scores
+                                
+                           )

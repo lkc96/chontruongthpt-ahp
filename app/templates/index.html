@@ -72,7 +72,10 @@
               <a class="nav-link me-md-4 custom-nav-link" href="#select-school">Chọn trường</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link me-md-4 custom-nav-link" href="#matrix-comparison">So sánh</a>
+              <a class="nav-link me-md-4 custom-nav-link" href="#matrix-comparison">Ma trận</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link me-md-4 custom-nav-link" href="#ahp-results">Kết quả</a>
             </li>
           </ul>
         </div>
@@ -100,111 +103,85 @@
           <!-- OpenLayers JS -->
           <script src="https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js"></script>
           <script>
-            const view = new ol.View({
-              center: ol.proj.fromLonLat([106.660172, 10.762622]), // Tọa độ TP.HCM
-              zoom: 10.6
-            });
-        
-            const osmLayer = new ol.layer.Tile({
-              source: new ol.source.OSM({
-              attributions: []
-              })
-            });
-        
-            const ranhPhuongLayer = new ol.layer.Tile({
-              source: new ol.source.TileWMS({
-                url: 'http://localhost:8082/geoserver/AHP_THPT/wms',
-                params: {
-                  'LAYERS': 'AHP_THPT:RGQuan_HCM',
-                  'TILED': true,
-                  'FORMAT': 'image/png'
-                },
-                serverType: 'geoserver',
-                transition: 0
-              })
-            });
-        
-            const truongTHPTLayer = new ol.layer.Tile({
-              source: new ol.source.TileWMS({
-                url: 'http://localhost:8082/geoserver/AHP_THPT/wms',
-                params: {
-                  'LAYERS': 'AHP_THPT:truong',
-                  'TILED': true,
-                  'FORMAT': 'image/png'
-                },
-                serverType: 'geoserver',
-                transition: 0
-              })
-            });
-        
-            const map = new ol.Map({
-              target: 'map',
-              layers: [osmLayer, ranhPhuongLayer, truongTHPTLayer],
-              view: view
-            });
-        
-            const popup = document.getElementById('popup');
-            const overlay = new ol.Overlay({
-              element: popup,
-              positioning: 'bottom-center',
-              stopEvent: false,
-              offset: [0, -10]
-            });
-            map.addOverlay(overlay);
-        
-            map.on('singleclick', function (evt) {
-              const viewResolution = view.getResolution();
-              const url = truongTHPTLayer.getSource().getFeatureInfoUrl(
-                evt.coordinate,
-                viewResolution,
-                'EPSG:3857',
-                {
-                  'INFO_FORMAT': 'application/json'
-                }
-              );
-              if (url) {
-                fetch(url)
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.features.length > 0) {
-                      const props = data.features[0].properties;
-                      const content = `<strong>${props.ten_truong}</strong><br/>Địa chỉ: ${props.dia_chi}`;
-                      popup.innerHTML = content;
-                      overlay.setPosition(evt.coordinate);
-                    } else {
-                      popup.innerHTML = '';
-                    }
-                  });
-              }
-            });
-          </script>
-        <!-- </div> -->
+  const view = new ol.View({
+    center: ol.proj.fromLonLat([106.660172, 10.762622]), // Tọa độ TP.HCM
+    zoom: 10.6
+  });
 
-        <!-- <div class="col-lg-6">
-          <h2 class="text-capitalize lh-3 my-3">HỆ THỐNG CHỌN TRƯỜNG THPT </h2>
-         <div class="container">
-          <p class="fs-6 fw-semibold text-dark" style="text-align: justify; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
-            Kết quả thi vào lớp 10 công lập có thể đã mang đến những nỗi thất vọng khi ước mơ vào trường công lập không thành. Nhưng điều đó không phải là dấu chấm hết cho con đường học vấn. Thay vì chùn bước, nhiều phụ huynh đã bắt đầu tìm kiếm những trường THPT dân lập uy tín, nơi con em mình có thể tiếp tục học tập trong một môi trường chất lượng, phù hợp với năng lực và điều kiện gia đình.
-          </p>
-          <p class="fs-6 fw-semibold text-dark" style="text-align: justify; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
-            Chúng tôi hiểu được mong muốn ấy, và sẵn sàng hỗ trợ quý phụ huynh và các em học sinh tìm kiếm ngôi trường dân lập lý tưởng. Hãy chia sẻ với chúng tôi về nhu cầu và nguyện vọng của quý phụ huynh để cùng nhau mở ra những cánh cửa mới cho tương lai.
-          </p>
-        </div>
-        </div> -->
-      
-        <!-- Cột tiêu đề và văn bản -->
-        <!-- <div class="col-lg-6">
-          <h2 class="fw-bold mb-4">HỆ THỐNG CHỌN TRƯỜNG THPT TƯ THỤC</h2>
-          
-          <p class="fs-5 fw-semibold text-dark" style="text-align: justify !important; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
-            Kết quả thi vào lớp 10 công lập có thể đã mang đến những nỗi thất vọng khi ước mơ vào trường công lập không thành. Nhưng điều đó không phải là dấu chấm hết cho con đường học vấn. Thay vì chùn bước, nhiều phụ huynh đã bắt đầu tìm kiếm những trường THPT dân lập uy tín, nơi con em mình có thể tiếp tục học tập trong một môi trường chất lượng, phù hợp với năng lực và điều kiện gia đình.
-          </p>
-          
-          <p class="fs-5 fw-semibold text-dark" style="text-align: justify !important; text-indent: 2em; letter-spacing: 0.01em; line-height: 1.6;">
-            Chúng tôi hiểu được mong muốn ấy, và sẵn sàng hỗ trợ quý phụ huynh và các em học sinh tìm kiếm ngôi trường dân lập lý tưởng. Hãy chia sẻ với chúng tôi về nhu cầu và nguyện vọng của quý phụ huynh để cùng nhau mở ra những cánh cửa mới cho tương lai.
-          </p>
-        </div> -->
+  const osmLayer = new ol.layer.Tile({
+    source: new ol.source.OSM({
+      attributions: []
+    })
+  });
+
+  // ✅ Lớp ranh giới phường từ Flask API (GeoJSON)
+  const ranhPhuongLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: '/api/ranhphuong',
+      format: new ol.format.GeoJSON()
+    }),
+     style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#2563eb',
+      width: 2,
+      lineDash: [5, 3]
+    })
+  }),
+  zIndex: 1 // Đặt z-index thấp hơn
+});
   
+
+  // ✅ Lớp trường THPT từ Flask API (GeoJSON)
+  const truongTHPTLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: '/api/truong',
+      format: new ol.format.GeoJSON()
+    }),
+   style: new ol.style.Style({
+    text: new ol.style.Text({
+      text: '📍',
+      font: '20px sans-serif',
+      fill: new ol.style.Fill({ color: '#ef4444' }),
+      stroke: new ol.style.Stroke({ 
+        color: '#ffffff', 
+        width: 2 
+      })
+    })
+  }),
+  zIndex: 2 // Đặt z-index cao hơn
+});
+
+
+  const map = new ol.Map({
+    target: 'map',
+    layers: [osmLayer, ranhPhuongLayer, truongTHPTLayer],
+    view: view
+  });
+
+  // ✅ Popup hiển thị thông tin trường
+  const popup = document.getElementById('popup');
+  const overlay = new ol.Overlay({
+    element: popup,
+    positioning: 'bottom-center',
+    stopEvent: false,
+    offset: [0, -10]
+  });
+  map.addOverlay(overlay);
+
+  map.on('singleclick', function (evt) {
+    const features = map.getFeaturesAtPixel(evt.pixel);
+    if (features && features.length > 0) {
+      const props = features[0].getProperties();
+      if (props.ten_truong) {
+        const content = `<strong>${props.ten_truong}</strong><br/>Địa chỉ: ${props.dia_chi}`;
+        popup.innerHTML = content;
+        overlay.setPosition(evt.coordinate);
+      }
+    } else {
+      popup.innerHTML = '';
+    }
+  });
+</script>
       </div>
     </section>
     <!-- select school  -->
@@ -301,7 +278,45 @@
     </div>
   </div>
 </section>
+<!-- Phương án theo từng tiêu chí các tabs nằm ở trong section này-->
+ <!-- <section class="container my-5">
+  <h3 class="mb-4 ">Bảng Ma Trận So Sánh Cặp Các Phương Án Theo Từng Tiêu Chí</h3>
+  <p class="fs-6 text-black-justify" style="text-indent: 2em;">
+    Để đánh giá mức độ quan trọng giữa các tiêu chí, người dùng so sánh từng cặp tiêu chí theo thang điểm AHP từ 1/9 đến 9.
+    Giá trị <em>1</em> thể hiện hai tiêu chí <em> quan trọng như nhau </em>; giá trị <em>3, 5, 7, 9</em> cho thấy tiêu chí hàng ngang <em>quan trọng hơn tiêu chí cột</em> với mức độ tăng dần; ngược lại, 
+    các giá trị <em>1/3, 1/5, 1/7, 1/9</em> biểu thị tiêu chí hàng ngang <em>kém quan trọng hơn</em>. 
+  </p>
+  <div class="row flex-lg-row-reverse align-items-center">
+     <ul class="nav nav-tabs mt-4" id="resultTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education" type="button" role="tab" aria-controls="education" aria-selected="false">Chất lượng giáo dục</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="facility-tab" data-bs-toggle="tab" data-bs-target="#facility" type="button" role="tab" aria-controls="facility" aria-selected="false">Cơ sở vật chất</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tuition-tab" data-bs-toggle="tab" data-bs-target="#tuition" type="button" role="tab" aria-controls="tuition" aria-selected="false">Học phí</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">Hoạt động ngoại khóa</button>
+      </li>
+    </ul>
 
+    <div class="tab-content p-3 border border-top-0 bg-light" id="resultTabsContent">
+      <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
+  <div id="educationMatrixContainer"></div>
+</div>
+<div class="tab-pane fade" id="facility" role="tabpanel" aria-labelledby="facility-tab">
+  <div id="facilityMatrixContainer"></div>
+</div>
+<div class="tab-pane fade" id="tuition" role="tabpanel" aria-labelledby="tuition-tab">
+  <div id="tuitionMatrixContainer"></div>
+</div>
+<div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
+  <div id="activityMatrixContainer"></div>
+</div>
+  </div>
+ </section> -->
 <!-- Kết quả AHP -->
 <section id="ahp-results" class="container mt-5" style="display: none;">
   <h3 class="body-text-color">Kết quả Xếp Hạng Trường</h3>
@@ -334,81 +349,12 @@
 <section>
   <div class="d-flex justify-content-center mt-4 gap-3">
     <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="calculateAHP()">Kiểm Tra</button>
+    <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="openAHPMatrices()">Phương án theo tiêu chí</button>
     <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="submitAHPMatrix()">Tính toán AHP</button>
-    <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="openAHPMatrices()">Chi Tiết Kết Quả</button>
+    <button class="btn btn-warning px-4 rounded-pill shadow-sm fw-semibold fs-6" onclick="openReport()">Xuất báo cáo</button>
   </div>
 </section>
 
-
-
-
-<!-- <script>
-  const criteria = [
-    "Chất lượng giáo dục",
-    "Cơ sở vật chất",
-    "Học phí",
-    "Hoạt động ngoại khóa"
-  ];
-
-  // Hàm phân tích phân số hoặc số thực
-  function parseFraction(value) {
-    if (value.includes("/")) {
-      const parts = value.split("/");
-      if (parts.length === 2) {
-        const numerator = parseFloat(parts[0]);
-        const denominator = parseFloat(parts[1]);
-        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-          return numerator / denominator;
-        }
-      }
-      return NaN;
-    }
-    return parseFloat(value);
-  }
-
-  // Tạo bảng nhập liệu
-  function generateMatrix() {
-    let tbody = '';
-    for (let i = 0; i < criteria.length; i++) {
-      tbody += `<tr><th class="text-white">${criteria[i]}</th>`;
-      for (let j = 0; j < criteria.length; j++) {
-        const id = `cell-${i}-${j}`;
-        if (i === j) {
-          tbody += `<td><input type="text" value="1" class="form-control text-center" id="${id}" disabled></td>`;
-        } else if (j > i) {
-          tbody += `<td><input type="text" class="form-control text-center"
-                       id="${id}" onchange="updateMatrix(${i}, ${j}, this)"></td>`;
-        } else {
-          tbody += `<td><input type="text" class="form-control text-center" id="${id}" disabled></td>`;
-        }
-      }
-      tbody += '</tr>';
-    }
-    document.getElementById('matrixBody').innerHTML = tbody;
-  }
-
-  // Cập nhật ô nghịch đảo khi nhập
-  function updateMatrix(row, col, input) {
-    const rawValue = input.value.trim();
-    const num = parseFraction(rawValue);
-
-    if (isNaN(num) || num < 1 / 9 || num > 9) {
-      alert("Vui lòng nhập số từ 1/9 đến 9 (có thể là phân số như 1/3, 2/5...)");
-      input.value = '';
-      return;
-    }
-
-    const inverse = 1 / num;
-    const inverseCell = document.getElementById(`cell-${col}-${row}`);
-    if (inverseCell) inverseCell.value = inverse.toFixed(4).replace(/\.?0+$/, "");
-
-    document.getElementById(`cell-${row}-${row}`).value = "1";
-    document.getElementById(`cell-${col}-${col}`).value = "1";
-  }
-
-  // Khởi tạo khi trang tải
-  document.addEventListener("DOMContentLoaded", generateMatrix);
-</script> -->
 <script>
   const criteria = [
     "Chất lượng giáo dục",
@@ -540,10 +486,8 @@
     const isValid = CR < 0.1;
     if (isValid) {
     alert(`✅ Chỉ số nhất quán (CR): ${CR.toFixed(3)} – Hợp lệ`);
-    document.getElementById("resultSection").style.display = "block";
   } else {
     alert(`❌ Chỉ số nhất quán (CR): ${CR.toFixed(3)} – Không hợp lệ`);
-    document.getElementById("resultSection").style.display = "none";
   }
     // 👉 Hiển thị bảng trọng số
 const weightsBody = document.getElementById("weightsBody");

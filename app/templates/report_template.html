@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo kết quả chọn trường THPT dân lập</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        h3 {
+            color: #4a5568;
+            font-size: 1.3rem;
+            margin: 30px 0 20px 0;
+            padding-left: 15px;
+            border-left: 3px solid #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f7fafc;
+        }
+
+        tr:hover td {
+            background-color: #edf2f7;
+        }
+
+        .criteria-table th:first-child,
+        .criteria-table td:first-child {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .ranking-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-left: 5px solid #48bb78;
+        }
+
+        .ranking-table th {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .ranking-row:first-child td {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #744210;
+            font-weight: 700;
+        }
+
+        .ranking-row:nth-child(2) td {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e2e8f0 100%);
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .ranking-row:nth-child(3) td {
+            background: linear-gradient(135deg, #cd7f32 0%, #d69e2e 100%);
+            color: #744210;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .section {
+                padding: 20px 15px;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container fade-in">
+    <div class="header">
+        <h1>BÁO CÁO KẾT QUẢ CHỌN TRƯỜNG THPT DÂN LẬP</h1>
+    </div>
+
+    <div class="content">
+        <div class="section">
+            <h2>Các phương án đã chọn</h2>
+            <table>
+                <tr>
+                    <th>Kí hiệu</th>
+                    <th>Phương án</th>
+                </tr>
+                <tr>
+                    <td><strong>PA1</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>PA2</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>PA3</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>PA4</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>PA5</strong></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>1. Kết quả trọng số tiêu chí</h2>
+            <table class="criteria-table">
+                <tr>
+                    <th>Kí hiệu</th>
+                    <th>Tiêu chí</th>
+                    <th>Trọng số</th>
+                </tr>
+                <tr>
+                    <td><strong>C1</strong></td>
+                    <td>Chất lượng giáo dục</td>
+                    <td>{{ criteria_weights['C1'] }}</td>
+                </tr>
+                <tr>
+                    <td><strong>C2</strong></td>
+                    <td>Cơ sở vật chất</td>
+                    <td>{{ criteria_weights['C2'] }}</td>
+                </tr>
+                <tr>
+                    <td><strong>C3</strong></td>
+                    <td>Học phí</td>
+                    <td>{{ criteria_weights['C3'] }}</td>
+                </tr>
+                <tr>
+                    <td><strong>C4</strong></td>
+                    <td>Hoạt động ngoại khóa</td>
+                    <td>{{ criteria_weights['C4'] }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>2. Kết quả trọng số phương án</h2> 
+            <h3>2.1 Trọng số theo tiêu chí Chất lượng giáo dục</h3>
+         <table>
+            <tr>
+                <th>Phương án</th>
+                {% for i in range(labels|length) %}
+                <th>PA{{ i+1 }}</th>
+                {% endfor %}
+                <th>Trọng số</th>
+            </tr>
+            {% for i in range(labels|length) %}
+            <tr>
+                <td><strong>PA{{ i+1 }}</strong></td>
+                {% for val in matrix_data['CLGD'][0][i] %}
+                <td>{{ val }}</td>
+                {% endfor %}
+                <td>{{ matrix_data['CLGD'][1][i] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <h3>2.2 Trọng số theo tiêu chí Cơ sở vật chất</h3>
+            <table>
+            <tr>
+                <th>Phương án</th>
+                {% for i in range(labels|length) %}
+                <th>PA{{ i+1 }}</th>
+                {% endfor %}
+                <th>Trọng số</th>
+            </tr>
+            {% for i in range(labels|length) %}
+            <tr>
+                <td><strong>PA{{ i+1 }}</strong></td>
+                {% for val in matrix_data['CSVC'][0][i] %}
+                <td>{{ val }}</td>
+                {% endfor %}
+                <td>{{ matrix_data['CSVC'][1][i] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+            <h3>2.3 Trọng số theo tiêu chí Học phí</h3>
+            <table>
+                <tr>
+                    <th>Phương án</th>
+                    {% for i in range(labels|length) %}
+                    <th>PA{{ i+1 }}</th>
+                    {% endfor %}
+                    <th>Trọng số</th>
+                </tr>
+                {% for i in range(labels|length) %}
+                <tr>
+                    <td><strong>PA{{ i+1 }}</strong></td>
+                    {% for val in matrix_data['HP'][0][i] %}
+                    <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>{{ matrix_data['HP'][1][i] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <h3>2.4 Trọng số theo tiêu chí Hoạt động ngoại khóa</h3>
+            <table>
+                <tr>
+                    <th>Phương án</th>
+                    {% for i in range(labels|length) %}
+                    <th>PA{{ i+1 }}</th>
+                    {% endfor %}
+                    <th>Trọng số</th>
+                </tr>
+                {% for i in range(labels|length) %}
+                <tr>
+                    <td><strong>PA{{ i+1 }}</strong></td>
+                    {% for val in matrix_data['HDNK'][0][i] %}
+                    <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>{{ matrix_data['HDNK'][1][i] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="section ranking-section">
+            <h2>3. Kết quả xếp hạng</h2>
+            <table class="ranking-table">
+                <tr>
+                    <th>Xếp hạng</th>
+                    <th>Kí hiệu</th>
+                    <th>Phương án</th>
+                    <th>Điểm số</th>
+                </tr>
+                <tr class="ranking-row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="ranking-row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="ranking-row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="ranking-row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="ranking-row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

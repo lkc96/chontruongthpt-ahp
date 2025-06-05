@@ -246,3 +246,48 @@ window.ahpRankingChart = new Chart(ctx, {
     console.error("Lỗi khi gửi ma trận:", error);
   });
 }
+function openReport() {
+  const matrix = getCriteriaMatrix();
+  const selectedIds = [];
+  for (let i = 0; i < 5; i++) {
+    const select = document.getElementById(`truong-select-${i}`);
+    if (select.value) {
+      selectedIds.push(select.value);
+    }
+  }
+
+  if (selectedIds.length !== 5) {
+    alert("Vui lòng chọn đủ 5 trường!");
+    return;
+  }
+
+  fetch("/report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      truong_ids: selectedIds,
+      criteria_matrix: matrix,
+      save_pdf: true
+    })
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Lỗi khi tạo báo cáo");
+      }
+      return res.blob();  // ⚠️ Đây là blob, không phải text
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bao_cao_ahp.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(err => {
+      console.error("Error generating PDF:", err);
+      alert("Không thể tạo PDF!");
+    });
+}

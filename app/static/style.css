@@ -759,8 +759,8 @@ iconify-icon.property-icon {
 
   .ol-popup {
     position: absolute;
-    background: rgba(0, 0, 0, 0.85);
-    color: #fff;
+    background: #fff;
+    color: #2c4236;
     padding: 16px;
     border-radius: 10px;
     border: 1px solid #00ffc3;
