@@ -448,7 +448,7 @@ def report():
         )
         final_scores.append({
             "ten_truong": labels[i],
-            "score": round(score, 4)
+            "score": round(score, 3)
         })
 
     

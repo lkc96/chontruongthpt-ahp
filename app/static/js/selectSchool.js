@@ -186,7 +186,7 @@ function submitAHPMatrix() {
       nameCell.textContent = item.ten_truong;
 
       const scoreCell = document.createElement("td");
-      scoreCell.textContent = item.diem.toFixed(4); // Làm tròn điểm đến 4 chữ số
+      scoreCell.textContent = item.diem.toFixed(3); // Làm tròn điểm đến 4 chữ số
 
       row.appendChild(rankCell);
       row.appendChild(nameCell);
@@ -232,7 +232,7 @@ window.ahpRankingChart = new Chart(ctx, {
       tooltip: {
         callbacks: {
           label: function (context) {
-            return `Điểm: ${context.raw.toFixed(4)}`;
+            return `Điểm: ${context.raw.toFixed(3)}`;
           }
         }
       }
